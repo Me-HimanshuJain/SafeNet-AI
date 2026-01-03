@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic-settings
+python-json-logger
+python-dotenv
+google-cloud-vision
+google-cloud-speech
+google-cloud-aiplatform
+pytest
+httpx
