@@ -24,7 +24,7 @@ class SecurityEnforcer:
         # Mock valid keys for demo
         self.valid_api_keys = {"safenet_admin_2026", "safenet_guard_2026"}
         self.role_permissions = {
-            "admin": ["analytics", "sos", "dispatch", "audit"],
+            "admin": ["analytics", "sos", "dispatch", "audit", "simulate"],
             "guard": ["sos", "dispatch"],
             "student": ["sos"]
         }

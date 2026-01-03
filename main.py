@@ -93,6 +93,10 @@ async def silent_sos(request: SOSRequest, api_key: str = Depends(security_enforc
     Supports voice, shake, gesture, and wearable triggers.
     """
     await security_enforcer.check_rate_limit(request.user_id)
+    # Ensure consistent location keys (lon vs lng)
+    if "lng" in request.location and "lon" not in request.location:
+        request.location["lon"] = request.location.pop("lng")
+        
     logger.info(f"Received Silent SOS request from user {request.user_id}")
     result = await silent_sos_manager.trigger_silent_sos(request)
     
@@ -189,7 +193,7 @@ async def simulate_event(event_type: str, api_key: str = Depends(security_enforc
     Live simulation endpoint for judges.
     Triggers full pipeline execution for specific emergency types.
     """
-    await security_enforcer.enforce_rbac(api_key, "admin")
+    await security_enforcer.enforce_rbac(api_key, "simulate")
     
     simulation_map = {
         "fall_detection": {
@@ -223,7 +227,7 @@ async def simulate_event(event_type: str, api_key: str = Depends(security_enforc
     
     event_data = simulation_map[event_type]
     incident_id = f"sim-{int(time.time())}"
-    location = {"lat": 37.7749, "lng": -122.4194}
+    location = {"lat": 37.7749, "lon": -122.4194}
     
     # Record in analytics
     analytics_engine.record_incident({
