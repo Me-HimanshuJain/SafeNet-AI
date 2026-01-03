@@ -1,3 +1,7 @@
+python-multipart
+opencv-python-headless
+mediapipe
+numpy
 fastapi
 uvicorn
 pydantic-settings
@@ -8,6 +12,3 @@ google-cloud-speech
 google-cloud-aiplatform
 pytest
 httpx
-mediapipe
-numpy
-opencv-python-headless
