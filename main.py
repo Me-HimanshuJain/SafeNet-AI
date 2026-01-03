@@ -11,12 +11,52 @@ from backend.app.services.speech_analyzer import speech_analyzer
 from backend.app.services.fusion_engine import risk_fusion_engine, RiskSignal
 from backend.app.services.responder_router import responder_router
 from backend.app.services.silent_sos import silent_sos_manager, SOSRequest
+from backend.app.services.alert_manager import alert_manager
 from fastapi import WebSocket, WebSocketDisconnect
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
-# In-memory store for active alerts connections
-active_connections: List[WebSocket] = []
+@app.websocket("/alerts/live")
+async def websocket_alerts(websocket: WebSocket, topics: str = "all", zones: str = "all"):
+    await websocket.accept()
+    
+    # Process subscription parameters
+    topic_list = topics.split(",") if topics != "all" else ["emergency", "system"]
+    zone_list = zones.split(",") if zones != "all" else []
+    
+    await alert_manager.subscribe(websocket, topic_list, zone_list)
+    
+    try:
+        while True:
+            # Handle client heartbeat or upstream messages
+            data = await websocket.receive_text()
+            # Echo for simulation/testing
+            await websocket.send_text(f"ACK: {data}")
+    except WebSocketDisconnect:
+        await alert_manager.unsubscribe(websocket)
+
+@app.post("/respond")
+async def trigger_response(
+    incident_id: str,
+    location: Dict[str, float],
+    zone_id: str = "default-zone"
+):
+    """
+    Endpoint for automated emergency response orchestration.
+    """
+    response = await responder_router.assign_responder(incident_id, location)
+    
+    # Broadcast to live alerts using AlertManager
+    await alert_manager.broadcast(
+        alert_data={"type": "DISPATCH", "data": response},
+        topic="emergency",
+        zone=zone_id
+    )
+
+    # Start escalation monitor in background
+    asyncio.create_task(responder_router.handle_escalation(incident_id))
+    
+    return response
 
 @app.post("/sos/silent")
 async def silent_sos(request: SOSRequest):
@@ -32,50 +72,23 @@ async def silent_sos(request: SOSRequest):
         incident_id = result["incident_id"]
         response_task = await responder_router.assign_responder(incident_id, request.location)
         
-        # Broadcast to live alerts
-        for connection in active_connections:
-            await connection.send_json({
+        # Broadcast via AlertManager
+        await alert_manager.broadcast(
+            alert_data={
                 "type": "SILENT_SOS",
                 "incident_id": incident_id,
                 "user_id": request.user_id,
                 "location": request.location,
                 "response": response_task
-            })
+            },
+            topic="emergency",
+            zone=request.metadata.get("zone", "default") if hasattr(request, 'metadata') and request.metadata else "default"
+        )
             
         # Background escalation monitor
         asyncio.create_task(responder_router.handle_escalation(incident_id))
         
     return result
-
-@app.websocket("/alerts/live")
-async def websocket_alerts(websocket: WebSocket):
-    await websocket.accept()
-    active_connections.append(websocket)
-    try:
-        while True:
-            # Keep connection alive or wait for incoming messages if needed
-            data = await websocket.receive_text()
-    except WebSocketDisconnect:
-        active_connections.remove(websocket)
-
-@app.post("/respond")
-async def trigger_response(
-    incident_id: str,
-    location: Dict[str, float]
-):
-    """
-    Endpoint for automated emergency response orchestration.
-    """
-    response = await responder_router.assign_responder(incident_id, location)
-    
-    # Broadcast to live alerts
-    for connection in active_connections:
-        await connection.send_json(response)
-
-    # Start escalation monitor in background
-    asyncio.create_task(responder_router.handle_escalation(incident_id))
-    
-    return response
 
 @app.post("/risk/evaluate")
 async def evaluate_risk(
