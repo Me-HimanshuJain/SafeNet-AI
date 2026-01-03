@@ -5,8 +5,24 @@ import numpy as np
 from backend.app.core.config import settings
 from backend.app.core.logging import logger
 from backend.app.services.vision_analyzer import vision_analyzer
+from backend.app.services.speech_analyzer import speech_analyzer
 
 app = FastAPI(title=settings.PROJECT_NAME)
+
+@app.post("/analyze/audio")
+async def analyze_audio(
+    file: UploadFile = File(...)
+):
+    """
+    Endpoint for audio emergency detection.
+    Accepts an audio file.
+    """
+    logger.info("Received audio analysis request")
+    
+    contents = await file.read()
+    # In a real scenario, we would handle different audio formats
+    analysis_results = await speech_analyzer.analyze_audio(contents)
+    return analysis_results
 
 @app.post("/analyze/video")
 async def analyze_video(

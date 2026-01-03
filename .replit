@@ -1,7 +1,7 @@
 modules = ["nodejs-20", "python-3.11"]
 [nix]
 channel = "stable-25_05"
-packages = ["unzip", "libGL", "glib"]
+packages = ["ffmpeg-full", "glib", "libGL", "libxcrypt", "pkg-config", "unzip", "xsimd"]
 
 [agent]
 expertMode = true

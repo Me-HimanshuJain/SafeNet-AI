@@ -12,3 +12,7 @@ google-cloud-speech
 google-cloud-aiplatform
 pytest
 httpx
+librosa
+opencv-python
+pydub
+scipy
