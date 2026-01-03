@@ -18,6 +18,10 @@ author = "agent"
 task = "workflow.run"
 args = "dev-server"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "backend-api"
+
 [[workflows.workflow]]
 name = "dev-server"
 author = "agent"
@@ -30,6 +34,22 @@ waitForPort = 5000
 [workflows.workflow.metadata]
 outputType = "webview"
 
+[[workflows.workflow]]
+name = "backend-api"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
+waitForPort = 8000
+
+[workflows.workflow.metadata]
+outputType = "console"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 8000
+externalPort = 8000
