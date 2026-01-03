@@ -12,10 +12,10 @@ export default function Dashboard() {
   const { toggleEmergency, isEmergency } = useSafety();
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex font-sans">
+    <div className="min-h-screen bg-background text-foreground flex font-sans overflow-x-hidden">
       <Sidebar />
       
-      <main className="flex-1 ml-64 relative z-0">
+      <main className="flex-1 transition-all duration-300 relative z-0 pl-16">
         <AlertBanner />
         
         <div className="p-6 h-[calc(100vh-64px)] flex flex-col gap-6">
