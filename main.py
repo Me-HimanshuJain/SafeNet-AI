@@ -1,4 +1,5 @@
 import time
+import asyncio
 from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, UploadFile, File, Form
 import cv2
