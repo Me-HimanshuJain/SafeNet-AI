@@ -1,4 +1,4 @@
-from typing import List, Dict, Set
+from typing import List, Dict, Set, Optional
 from fastapi import WebSocket
 from backend.app.core.logging import logger
 import json
@@ -14,7 +14,7 @@ class AlertManager:
         # zone -> set of websockets
         self.zone_subscriptions: Dict[str, Set[WebSocket]] = {}
 
-    async def subscribe(self, websocket: WebSocket, topics: List[str] = None, zones: List[str] = None):
+    async def subscribe(self, websocket: WebSocket, topics: Optional[List[str]] = None, zones: Optional[List[str]] = None):
         """Subscribe a connection to specific topics or zones."""
         if topics:
             for topic in topics:
@@ -30,14 +30,20 @@ class AlertManager:
 
     async def unsubscribe(self, websocket: WebSocket):
         """Clean up all subscriptions for a disconnected websocket."""
-        for topic in self.subscriptions:
+        # Create a copy of keys to avoid modification during iteration
+        for topic in list(self.subscriptions.keys()):
             self.subscriptions[topic].discard(websocket)
-        for zone in self.zone_subscriptions:
+            if not self.subscriptions[topic]:
+                del self.subscriptions[topic]
+                
+        for zone in list(self.zone_subscriptions.keys()):
             self.zone_subscriptions[zone].discard(websocket)
+            if not self.zone_subscriptions[zone]:
+                del self.zone_subscriptions[zone]
 
-    async def broadcast(self, alert_data: Dict, topic: str = None, zone: str = None):
+    async def broadcast(self, alert_data: Dict, topic: Optional[str] = None, zone: Optional[str] = None):
         """Broadcast alert to relevant subscribers."""
-        targets = set()
+        targets: Set[WebSocket] = set()
         
         if topic and topic in self.subscriptions:
             targets.update(self.subscriptions[topic])
