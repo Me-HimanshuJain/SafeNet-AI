@@ -10,12 +10,42 @@ from backend.app.services.vision_analyzer import vision_analyzer
 from backend.app.services.speech_analyzer import speech_analyzer
 from backend.app.services.fusion_engine import risk_fusion_engine, RiskSignal
 from backend.app.services.responder_router import responder_router
+from backend.app.services.silent_sos import silent_sos_manager, SOSRequest
 from fastapi import WebSocket, WebSocketDisconnect
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
 # In-memory store for active alerts connections
 active_connections: List[WebSocket] = []
+
+@app.post("/sos/silent")
+async def silent_sos(request: SOSRequest):
+    """
+    Endpoint for Silent SOS system.
+    Supports voice, shake, gesture, and wearable triggers.
+    """
+    logger.info(f"Received Silent SOS request from user {request.user_id}")
+    result = await silent_sos_manager.trigger_silent_sos(request)
+    
+    if result["status"] == "ACTIVATED":
+        # Orchestrate immediate response
+        incident_id = result["incident_id"]
+        response_task = await responder_router.assign_responder(incident_id, request.location)
+        
+        # Broadcast to live alerts
+        for connection in active_connections:
+            await connection.send_json({
+                "type": "SILENT_SOS",
+                "incident_id": incident_id,
+                "user_id": request.user_id,
+                "location": request.location,
+                "response": response_task
+            })
+            
+        # Background escalation monitor
+        asyncio.create_task(responder_router.handle_escalation(incident_id))
+        
+    return result
 
 @app.websocket("/alerts/live")
 async def websocket_alerts(websocket: WebSocket):
