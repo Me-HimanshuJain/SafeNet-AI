@@ -183,6 +183,82 @@ async def health_check():
         "environment": settings.ENVIRONMENT
     }
 
+@app.post("/simulate/{event_type}")
+async def simulate_event(event_type: str, api_key: str = Depends(security_enforcer.verify_api_key)):
+    """
+    Live simulation endpoint for judges.
+    Triggers full pipeline execution for specific emergency types.
+    """
+    await security_enforcer.enforce_rbac(api_key, "admin")
+    
+    simulation_map = {
+        "fall_detection": {
+            "type": "VISION",
+            "event": "CRITICAL_FALL",
+            "zone": "Zone-A-South",
+            "priority": "HIGH"
+        },
+        "scream_detection": {
+            "type": "AUDIO",
+            "event": "DISTRESS_SCREAM",
+            "zone": "Zone-B-Library",
+            "priority": "CRITICAL"
+        },
+        "crowd_panic": {
+            "type": "VISION",
+            "event": "UNUSUAL_MOTION_PACK",
+            "zone": "Main-Plaza",
+            "priority": "HIGH"
+        },
+        "medical_collapse": {
+            "type": "VISION",
+            "event": "PROLONGED_IMMOBILITY",
+            "zone": "Cafeteria-West",
+            "priority": "CRITICAL"
+        }
+    }
+    
+    if event_type not in simulation_map:
+        raise HTTPException(status_code=400, detail="Invalid event type")
+    
+    event_data = simulation_map[event_type]
+    incident_id = f"sim-{int(time.time())}"
+    location = {"lat": 37.7749, "lng": -122.4194}
+    
+    # Record in analytics
+    analytics_engine.record_incident({
+        "type": event_data["type"],
+        "event": event_data["event"],
+        "zone": event_data["zone"],
+        "simulated": True
+    })
+    
+    # Orchestrate response
+    response_task = await responder_router.assign_responder(incident_id, location)
+    
+    # Broadcast live alert
+    await alert_manager.broadcast(
+        alert_data={
+            "type": "SIMULATION_ALERT",
+            "event_type": event_type,
+            "incident_id": incident_id,
+            "zone": event_data["zone"],
+            "severity": event_data["priority"],
+            "response": response_task
+        },
+        topic="emergency",
+        zone=event_data["zone"]
+    )
+    
+    security_enforcer.log_audit(api_key, "SIMULATE", event_type, "SUCCESS")
+    
+    return {
+        "status": "SIMULATION_TRIGGERED",
+        "event": event_type,
+        "incident_id": incident_id,
+        "broadcast": "SUCCESS"
+    }
+
 @app.on_event("startup")
 async def startup_event():
     logger.info("SafeNet AI Backend starting up", extra={"config": settings.model_dump()})
