@@ -13,23 +13,36 @@ from backend.app.services.responder_router import responder_router
 from backend.app.services.silent_sos import silent_sos_manager, SOSRequest
 from backend.app.services.alert_manager import alert_manager
 from backend.app.services.analytics_engine import analytics_engine
-from fastapi import WebSocket, WebSocketDisconnect
+from backend.app.core.security import security_enforcer
+from fastapi import WebSocket, WebSocketDisconnect, Depends
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
 @app.get("/analytics/summary")
-async def get_analytics_summary():
+async def get_analytics_summary(api_key: str = Depends(security_enforcer.verify_api_key)):
     """
     Endpoint for incident intelligence summary.
     """
+    await security_enforcer.enforce_rbac(api_key, "analytics")
+    security_enforcer.log_audit(api_key, "READ", "analytics_summary", "SUCCESS")
     return await analytics_engine.get_summary()
 
 @app.get("/analytics/predictions")
-async def get_risk_predictions():
+async def get_risk_predictions(api_key: str = Depends(security_enforcer.verify_api_key)):
     """
     Endpoint for time-based risk forecasting.
     """
+    await security_enforcer.enforce_rbac(api_key, "analytics")
+    security_enforcer.log_audit(api_key, "READ", "analytics_predictions", "SUCCESS")
     return await analytics_engine.get_predictions()
+
+@app.get("/audit/logs")
+async def get_audit_logs(api_key: str = Depends(security_enforcer.verify_api_key)):
+    """
+    Endpoint for viewing audit logs (Admin only).
+    """
+    await security_enforcer.enforce_rbac(api_key, "audit")
+    return security_enforcer.audit_logs
 
 @app.websocket("/alerts/live")
 async def websocket_alerts(websocket: WebSocket, topics: str = "all", zones: str = "all"):
@@ -74,11 +87,12 @@ async def trigger_response(
     return response
 
 @app.post("/sos/silent")
-async def silent_sos(request: SOSRequest):
+async def silent_sos(request: SOSRequest, api_key: str = Depends(security_enforcer.verify_api_key)):
     """
     Endpoint for Silent SOS system.
     Supports voice, shake, gesture, and wearable triggers.
     """
+    await security_enforcer.check_rate_limit(request.user_id)
     logger.info(f"Received Silent SOS request from user {request.user_id}")
     result = await silent_sos_manager.trigger_silent_sos(request)
     
