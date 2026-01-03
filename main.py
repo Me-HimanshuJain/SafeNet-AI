@@ -8,8 +8,43 @@ from backend.app.core.logging import logger
 from backend.app.services.vision_analyzer import vision_analyzer
 from backend.app.services.speech_analyzer import speech_analyzer
 from backend.app.services.fusion_engine import risk_fusion_engine, RiskSignal
+from backend.app.services.responder_router import responder_router
+from fastapi import WebSocket, WebSocketDisconnect
 
 app = FastAPI(title=settings.PROJECT_NAME)
+
+# In-memory store for active alerts connections
+active_connections: List[WebSocket] = []
+
+@app.websocket("/alerts/live")
+async def websocket_alerts(websocket: WebSocket):
+    await websocket.accept()
+    active_connections.append(websocket)
+    try:
+        while True:
+            # Keep connection alive or wait for incoming messages if needed
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        active_connections.remove(websocket)
+
+@app.post("/respond")
+async def trigger_response(
+    incident_id: str,
+    location: Dict[str, float]
+):
+    """
+    Endpoint for automated emergency response orchestration.
+    """
+    response = await responder_router.assign_responder(incident_id, location)
+    
+    # Broadcast to live alerts
+    for connection in active_connections:
+        await connection.send_json(response)
+
+    # Start escalation monitor in background
+    asyncio.create_task(responder_router.handle_escalation(incident_id))
+    
+    return response
 
 @app.post("/risk/evaluate")
 async def evaluate_risk(
