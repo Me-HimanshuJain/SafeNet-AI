@@ -60,8 +60,8 @@ class SecurityEnforcer:
         logger.info(f"AUDIT: {user_id} | {action} | {resource} | {status}")
 
     async def enforce_rbac(self, api_key: str, required_permission: str):
-        # Mock role mapping based on key suffix for demo
-        role = "guard" if "guard" in api_key else "admin"
+        # Mock role mapping: any key starting with 'safenet_admin' is admin
+        role = "admin" if api_key.startswith("safenet_admin") else "guard"
         if required_permission not in self.role_permissions.get(role, []):
             raise HTTPException(status_code=403, detail="Insufficient permissions")
 
