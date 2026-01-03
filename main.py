@@ -12,9 +12,24 @@ from backend.app.services.fusion_engine import risk_fusion_engine, RiskSignal
 from backend.app.services.responder_router import responder_router
 from backend.app.services.silent_sos import silent_sos_manager, SOSRequest
 from backend.app.services.alert_manager import alert_manager
+from backend.app.services.analytics_engine import analytics_engine
 from fastapi import WebSocket, WebSocketDisconnect
 
 app = FastAPI(title=settings.PROJECT_NAME)
+
+@app.get("/analytics/summary")
+async def get_analytics_summary():
+    """
+    Endpoint for incident intelligence summary.
+    """
+    return await analytics_engine.get_summary()
+
+@app.get("/analytics/predictions")
+async def get_risk_predictions():
+    """
+    Endpoint for time-based risk forecasting.
+    """
+    return await analytics_engine.get_predictions()
 
 @app.websocket("/alerts/live")
 async def websocket_alerts(websocket: WebSocket, topics: str = "all", zones: str = "all"):
@@ -68,6 +83,13 @@ async def silent_sos(request: SOSRequest):
     result = await silent_sos_manager.trigger_silent_sos(request)
     
     if result["status"] == "ACTIVATED":
+        # Record for analytics
+        analytics_engine.record_incident({
+            "type": "SILENT_SOS",
+            "user_id": request.user_id,
+            "zone": request.metadata.get("zone", "default") if hasattr(request, 'metadata') and request.metadata else "default"
+        })
+        
         # Orchestrate immediate response
         incident_id = result["incident_id"]
         response_task = await responder_router.assign_responder(incident_id, request.location)
