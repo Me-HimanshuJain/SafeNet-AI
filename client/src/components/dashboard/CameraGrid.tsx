@@ -32,11 +32,17 @@ export function CameraGrid() {
           
           {isEmergency && feed.isCam3 ? (
             <video 
-              src="/attached_assets/aero_1767457005434.mp4" 
+              key="cam3-video"
+              src="/aero_cam3.mp4" 
               autoPlay 
               loop 
               muted 
+              playsInline
               className="w-full h-full object-cover group-hover:scale-105 transform transition-transform duration-500"
+              onError={(e) => {
+                const video = e.target as HTMLVideoElement;
+                console.error("Video load error for src:", video.src);
+              }}
             />
           ) : (
             <img 
