@@ -8,3 +8,6 @@ google-cloud-speech
 google-cloud-aiplatform
 pytest
 httpx
+mediapipe
+numpy
+opencv-python-headless
