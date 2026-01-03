@@ -8,7 +8,7 @@ import cctvParking from "@assets/generated_images/cctv_parking_lot.png";
 const FEEDS = [
   { id: 1, name: "Library Entrance", src: cctvLibrary, status: "Alert" },
   { id: 2, name: "Main Quad", src: cctvQuad, status: "Normal" },
-  { id: 3, name: "Dorm Lobby", src: cctvDorm, status: "Normal" },
+  { id: 3, name: "Dorm Lobby", src: cctvDorm, status: "Normal", isCam3: true },
   { id: 4, name: "Parking Lot B", src: cctvParking, status: "Normal" },
 ];
 
@@ -21,17 +21,30 @@ export function CameraGrid() {
         <div 
           key={feed.id} 
           className={cn(
-            "relative bg-black rounded-lg overflow-hidden border-2 group",
-            isEmergency && feed.name === "Library Entrance" ? "border-destructive shadow-[0_0_20px_rgba(239,68,68,0.5)]" : "border-border/50"
+            "relative bg-black rounded-lg overflow-hidden border-2 group transition-all duration-500",
+            (isEmergency && feed.name === "Library Entrance") || (isEmergency && feed.isCam3) 
+              ? "border-destructive shadow-[0_0_20px_rgba(239,68,68,0.5)]" 
+              : "border-border/50"
           )}
         >
           {/* Video Feed Simulation */}
           <div className="absolute inset-0 bg-black/20 z-10 scanline pointer-events-none" />
-          <img 
-            src={feed.src} 
-            alt={feed.name} 
-            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500 group-hover:scale-105 transform"
-          />
+          
+          {isEmergency && feed.isCam3 ? (
+            <video 
+              src="/attached_assets/aero_1767457005434.mp4" 
+              autoPlay 
+              loop 
+              muted 
+              className="w-full h-full object-cover group-hover:scale-105 transform transition-transform duration-500"
+            />
+          ) : (
+            <img 
+              src={feed.src} 
+              alt={feed.name} 
+              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500 group-hover:scale-105 transform"
+            />
+          )}
 
           {/* Overlay UI */}
           <div className="absolute top-3 left-3 z-20 flex flex-col gap-1">
@@ -46,12 +59,12 @@ export function CameraGrid() {
           <div className="absolute top-3 right-3 z-20">
              <div className={cn(
                "flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border",
-               isEmergency && feed.name === "Library Entrance" 
+               isEmergency && (feed.name === "Library Entrance" || feed.isCam3)
                  ? "bg-destructive/80 text-white border-destructive/50 animate-pulse" 
                  : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
              )}>
-               <div className={cn("w-1.5 h-1.5 rounded-full", isEmergency && feed.name === "Library Entrance" ? "bg-white" : "bg-emerald-400")} />
-               {isEmergency && feed.name === "Library Entrance" ? "DETECTING" : "LIVE"}
+               <div className={cn("w-1.5 h-1.5 rounded-full", isEmergency && (feed.name === "Library Entrance" || feed.isCam3) ? "bg-white" : "bg-emerald-400")} />
+               {isEmergency && (feed.name === "Library Entrance" || feed.isCam3) ? "DETECTING" : "LIVE"}
              </div>
           </div>
 
@@ -63,6 +76,12 @@ export function CameraGrid() {
           {isEmergency && feed.name === "Library Entrance" && (
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-48 border-2 border-destructive/80 z-10 flex flex-col items-center justify-end pb-2">
                <span className="bg-destructive text-white text-[9px] px-1 font-bold uppercase">Person Down</span>
+            </div>
+          )}
+
+          {isEmergency && feed.isCam3 && (
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-32 border-2 border-destructive/80 z-10 flex flex-col items-center justify-end pb-2">
+               <span className="bg-destructive text-white text-[9px] px-1 font-bold uppercase">Unusual Motion</span>
             </div>
           )}
         </div>

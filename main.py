@@ -214,7 +214,44 @@ async def analyze_video_upload(
         "filename": file.filename
     }
 
-@app.get("/health")
+@app.post("/analyze/video/stream-cam3")
+async def analyze_video_stream_cam3(
+    api_key: str = Depends(security_enforcer.verify_api_key)
+):
+    """
+    Simulates the AI evaluation of the video feed specifically for Camera 3.
+    """
+    await security_enforcer.enforce_rbac(api_key, "sos")
+    zone_id = "Zone-A-South" # Zone for Cam 3
+    
+    # Simulate high-risk detection for the attached video content logic
+    # In a real scenario, this would process the aero_1767457005434.mp4 file
+    analysis_results = {
+        "threat_detected": True,
+        "threat_type": "CROWD_PANIC",
+        "confidence": 0.92,
+        "zone": zone_id
+    }
+    
+    incident_id = f"cam3-{int(time.time())}"
+    location = {"lat": 37.7749, "lon": -122.4194}
+    
+    # Broadcast alert
+    await alert_manager.broadcast(
+        alert_data={
+            "type": "AI_VIDEO_PREDICTION",
+            "incident_id": incident_id,
+            "zone": zone_id,
+            "camera": "CAM-03",
+            "threat": analysis_results["threat_type"],
+            "confidence": analysis_results["confidence"],
+            "prediction": "CRITICAL: Unusual motion pattern detected in Camera 3."
+        },
+        topic="emergency",
+        zone=zone_id
+    )
+    
+    return {"status": "MONITORING_ACTIVE", "prediction": analysis_results}
 async def health_check():
     return {
         "status": "healthy",
