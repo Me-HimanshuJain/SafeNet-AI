@@ -6,8 +6,20 @@ from backend.app.core.config import settings
 from backend.app.core.logging import logger
 from backend.app.services.vision_analyzer import vision_analyzer
 from backend.app.services.speech_analyzer import speech_analyzer
+from backend.app.services.fusion_engine import risk_fusion_engine, RiskSignal
 
 app = FastAPI(title=settings.PROJECT_NAME)
+
+@app.post("/risk/evaluate")
+async def evaluate_risk(
+    signals: List[RiskSignal]
+):
+    """
+    Endpoint for AI Risk Fusion Engine evaluation.
+    Merges video, audio, and motion signals.
+    """
+    logger.info("Received risk evaluation request")
+    return await risk_fusion_engine.evaluate_risk(signals)
 
 @app.post("/analyze/audio")
 async def analyze_audio(
