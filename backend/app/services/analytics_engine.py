@@ -32,13 +32,17 @@ class AnalyticsEngine:
             
         risk_scoring = {z: min(100, count * 20) for z, count in zones.items()}
         
+        top_zone = "none"
+        if zones:
+            top_zone = max(zones, key=lambda k: zones[k])
+        
         return {
             "total_incidents": len(self.incidents),
             "recent_24h": len(recent_incidents),
             "zone_risk_scores": risk_scoring,
-            "top_risk_zone": max(zones, key=zones.get) if zones else "none",
+            "top_risk_zone": top_zone,
             "report_summary": f"System has monitored {len(self.incidents)} incidents. "
-                             f"Current high-risk areas identified in {max(zones, key=zones.get) if zones else 'no zones'}."
+                             f"Current high-risk areas identified in {top_zone}."
         }
 
     async def get_predictions(self) -> Dict[str, Any]:
