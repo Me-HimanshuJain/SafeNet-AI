@@ -7,6 +7,8 @@ import { SafetyProvider } from "@/lib/context";
 import Dashboard from "@/pages/Dashboard";
 import Analytics from "@/pages/Analytics";
 import Settings from "@/pages/Settings";
+import LiveFeeds from "@/pages/LiveFeeds";
+import Alerts from "@/pages/Alerts";
 import MobileSOS from "@/pages/MobileSOS";
 import MobileGuard from "@/pages/MobileGuard";
 import NotFound from "@/pages/not-found";
@@ -17,6 +19,8 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/settings" component={Settings} />
+      <Route path="/feeds" component={LiveFeeds} />
+      <Route path="/alerts" component={Alerts} />
       <Route path="/mobile/sos" component={MobileSOS} />
       <Route path="/mobile/guard" component={MobileGuard} />
       <Route component={NotFound} />
