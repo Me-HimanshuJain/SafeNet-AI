@@ -17,7 +17,7 @@ export function AlertBanner() {
           <div className="container mx-auto px-6 py-3 flex items-center justify-between animate-pulse-fast">
             <div className="flex items-center gap-3">
               <Siren className="w-6 h-6 animate-spin-slow" />
-              <span className="font-mono font-bold text-lg tracking-wider">EMERGENCY DETECTED: LIBRARY ENTRANCE</span>
+              <span className="font-mono font-bold text-lg tracking-wider">EMERGENCY DETECTED: CAM-01 (LIBRARY ENTRANCE)</span>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm font-bold bg-white/20 px-2 py-1 rounded">CONFIDENCE: 98%</span>

@@ -27,7 +27,7 @@ export function SafetyProvider({ children }: { children: ReactNode }) {
     {
       id: "1",
       type: "Suspicious",
-      location: "Parking Lot B",
+      location: "CAM-04 (Parking Lot B)",
       timestamp: "10:42 AM",
       confidence: 85,
       status: "Investigating",
@@ -43,7 +43,7 @@ export function SafetyProvider({ children }: { children: ReactNode }) {
       const newAlert: Alert = {
         id: Date.now().toString(),
         type: "Assault",
-        location: "Library Entrance",
+        location: "CAM-01 (Library Entrance)",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         confidence: 98,
         status: "Active",
