@@ -6,9 +6,9 @@ import cctvDorm from "@assets/generated_images/cctv_dorm_lobby.png";
 import cctvParking from "@assets/generated_images/cctv_parking_lot.png";
 
 const FEEDS = [
-  { id: 1, name: "Library Entrance", src: cctvLibrary, status: "Alert" },
+  { id: 1, name: "Library Entrance", src: "/attached_assets/aero_cam1.mp4", status: "Alert", isVideo: true },
   { id: 2, name: "Main Quad", src: cctvQuad, status: "Normal" },
-  { id: 3, name: "Dorm Lobby", src: cctvDorm, status: "Normal", isCam3: true },
+  { id: 3, name: "Dorm Lobby", src: "/attached_assets/aero_1767457005434.mp4", status: "Normal", isCam3: true, isVideo: true },
   { id: 4, name: "Parking Lot B", src: cctvParking, status: "Normal" },
 ];
 
@@ -30,10 +30,10 @@ export function CameraGrid() {
           {/* Video Feed Simulation */}
           <div className="absolute inset-0 bg-black/20 z-10 scanline pointer-events-none" />
           
-          {isEmergency && feed.isCam3 ? (
+          {feed.isVideo ? (
             <video 
-              key="cam3-video-final-active"
-              src="/attached_assets/aero_1767457005434.mp4" 
+              key={`cam-${feed.id}-video`}
+              src={feed.src} 
               autoPlay 
               loop 
               muted 
