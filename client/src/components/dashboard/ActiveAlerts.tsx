@@ -17,13 +17,13 @@ export function ActiveAlerts() {
   const { alerts, resolveAlert } = useSafety();
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="font-mono text-sm uppercase text-muted-foreground tracking-wider">Active Incidents</h3>
         <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-mono">{alerts.filter(a => a.status === 'Active').length} LIVE</span>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 overflow-y-auto pr-1">
         {alerts.map((alert) => (
           <div 
             key={alert.id} 
