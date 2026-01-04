@@ -7,9 +7,9 @@ import cctvParking from "@assets/generated_images/cctv_parking_lot.png";
 
 const FEEDS = [
   { id: 1, name: "Library Entrance", src: "/attached_assets/aero_cam1.mp4", status: "Alert", isVideo: true },
-  { id: 2, name: "Main Quad", src: cctvQuad, status: "Normal" },
-  { id: 3, name: "Dorm Lobby", src: "/attached_assets/aero_1767457005434.mp4", status: "Normal", isCam3: true, isVideo: true },
-  { id: 4, name: "Parking Lot B", src: cctvParking, status: "Normal" },
+  { id: 2, name: "Main Quad", src: "/attached_assets/aero_cam2.mp4", status: "Normal", isVideo: true },
+  { id: 3, name: "Dorm Lobby", src: "/attached_assets/aero_cam3.mp4", status: "Normal", isCam3: true, isVideo: true },
+  { id: 4, name: "Parking Lot B", src: "/attached_assets/aero_cam4.mp4", status: "Normal", isVideo: true },
 ];
 
 export function CameraGrid() {
