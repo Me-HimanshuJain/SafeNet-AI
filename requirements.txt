@@ -1,5 +1,4 @@
 python-multipart
-opencv-python-headless
 mediapipe
 numpy
 fastapi

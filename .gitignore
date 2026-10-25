@@ -1,6 +1,49 @@
-node_modules
-dist
-.DS_Store
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+dist-ssr/
+build/
 server/public
-vite.config.ts.*
 *.tar.gz
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+
+# Replit & IDE local state
+.local/
+.config/
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Vite / bundler temporary files
+vite.config.ts.*
